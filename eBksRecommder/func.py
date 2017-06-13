@@ -4,6 +4,7 @@ from math import sqrt
 from dataloader import loadJsonObjectToDict
 import pickle
 import os
+import io
 import json
 
 PENALTY_RATIO = 9
@@ -111,12 +112,13 @@ def getRecommandedItems(prefs, itemMatch, userRating):
 
     for (item, rating) in userRating.items():
         #print item.encode("UTF-8")
-        for (similarity, itemSim) in itemMatch[item]:
-            if itemSim in userRating or similarity <= 0: continue
-            scores.setdefault(itemSim,0)
-            scores[itemSim] += similarity*rating
-            totalSim.setdefault(itemSim,0)
-            totalSim[itemSim] += similarity
+        if item in itemMatch :
+            for (similarity, itemSim) in itemMatch[item]:
+                if itemSim in userRating or similarity <= 0: continue
+                scores.setdefault(itemSim,0)
+                scores[itemSim] += similarity*rating
+                totalSim.setdefault(itemSim,0)
+                totalSim[itemSim] += similarity
     rankings =[(score/totalSim[item], item) for item,score in scores.items()]
     rankings.sort()
     rankings.reverse()
@@ -125,7 +127,7 @@ def getRecommandedItems(prefs, itemMatch, userRating):
 def readUserPrefs(userRatingPath):
     userRating = {}
     if os.path.exists(userRatingPath):
-        f = open(userRatingPath, 'r')
+        f = io.open(userRatingPath, 'r',encoding='gb2312')
         for line in f:
             txtSeg = line.split()
             userRating[txtSeg[0]] = float(txtSeg[1])
